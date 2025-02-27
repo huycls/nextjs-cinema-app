@@ -40,13 +40,13 @@ export default async function Home() {
       {/* Hero Section */}
       <div className="relative h-[80vh] w-full">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-blend-darken"
           style={{ backgroundImage: `url(${featured?.poster_url || featured?.thumb_url})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
         </div>
         
-        <div className="relative h-full flex items-center">
+        <div className="relative h-full flex items-end pb-44">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl">
               <h1 className="text-5xl font-bold mb-4">{featured?.name}</h1>

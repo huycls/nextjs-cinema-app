@@ -3,35 +3,122 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+// import { Slider } from '@/components/ui/slider';
 import { Play, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getMovies, type Movie, type ApiResponse } from '@/lib/api';
+import { getMovies, type Movie, type ApiResponse, getGenres, type Genre, getCountries, type Country } from '@/lib/api';
 import Image from 'next/image';
 import { LinkRouter } from '@/components/ui/linkRouter';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useLoading } from '@/components/loading-provider';
 
-const GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Science Fiction', 'Thriller'];
+
 const YEARS = Array.from({ length: 25 }, (_, i) => 2024 - i);
-const COUNTRIES = ['United States', 'United Kingdom', 'France', 'Japan', 'South Korea', 'India', 'Canada', 'Germany', 'Italy', 'Spain'];
 
 export default function Films() {
-  const [selectedGenre, setSelectedGenre] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedCountry, setSelectedCountry] = useState<string>('');
-  const [ratingRange, setRatingRange] = useState<number[]>([0, 10]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [selectedGenre, setSelectedGenre] = useState<string>(searchParams.get('genre') || '');
+  const [selectedYear, setSelectedYear] = useState<string>(searchParams.get('year') || '');
+  const [selectedCountry, setSelectedCountry] = useState<string>(searchParams.get('country') || '');
+  // const [ratingRange, setRatingRange] = useState<number[]>([
+  //   parseFloat(searchParams.get('minRating') || '0'),
+  //   parseFloat(searchParams.get('maxRating') || '10')
+  // ]);
+
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingGenres, setIsLoadingGenres] = useState(true);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { startLoading } = useLoading();
+
+   // Fetch genres on component mount
+   useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setIsLoadingGenres(true);
+        setIsLoadingCountries(true);
+        
+        // Fetch genres and countries in parallel
+        const [genreData, countryData] = await Promise.all([
+          getGenres(),
+          getCountries()
+        ]);
+        
+        setGenres(genreData);
+        setCountries(countryData);
+      } catch (err) {
+        console.error('Error fetching filters:', err);
+        // Fallback to empty arrays if API fails
+        setGenres([]);
+        setCountries([]);
+      } finally {
+        setIsLoadingGenres(false);
+        setIsLoadingCountries(false);
+      }
+    };
+
+    fetchFilters();
+  }, []);
 
   const fetchMovies = async (page: number) => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Build query parameters
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      
+      
+      if (selectedGenre) params.append('the-loai', selectedGenre);
+      if (selectedYear) params.append('name', selectedYear);
+      if (selectedCountry) params.append('quoc-gia', selectedCountry);
+      // if (ratingRange[0] > 0) params.append('minRating', ratingRange[0].toString());
+      // if (ratingRange[1] < 10) params.append('maxRating', ratingRange[1].toString());
+      
+      // Update URL with filters without triggering navigation
+      router.replace(`/danh-sach/?${params.toString()}`, { scroll: false });
+
+      const data = await getMovies(page, {
+        genre: selectedGenre,
+        year: selectedYear,
+        country: selectedCountry,
+      });
+      
+
+      setMovies(data.items || data?.data?.items);
+      setTotalPages(data.pagination?.totalPages || data?.data?.params?.pagination?.totalPages);
+      setCurrentPage(data.pagination?.currentPage || data?.data?.params?.pagination?.currentPage);
+    } catch (err) {
+      setError('Failed to load movies');
+      console.error('Error fetching movies:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchMoviesRefresh = async (page: number) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Build query parameters
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      router.replace(`/danh-sach/?${params.toString()}`, { scroll: false });
+
       const data = await getMovies(page);
+      
+
       setMovies(data.items);
-      setTotalPages(data.pagination.totalPages);
-      setCurrentPage(data.pagination.currentPage);
+      setTotalPages(data.pagination?.totalPages);
+      setCurrentPage(data.pagination?.currentPage);
     } catch (err) {
       setError('Failed to load movies');
       console.error('Error fetching movies:', err);
@@ -61,9 +148,11 @@ export default function Films() {
     setSelectedGenre('');
     setSelectedYear('');
     setSelectedCountry('');
-    setRatingRange([0, 10]);
     setCurrentPage(1);
-    fetchMovies(1);
+    //clear URLSearchParams
+    router.replace('/danh-sach?page=1', { scroll: false });
+
+    fetchMoviesRefresh(1);
   };
 
   // Generate pagination numbers
@@ -123,24 +212,24 @@ export default function Films() {
         <div className="bg-card rounded-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <label className="text-sm font-medium mb-2 block">Genre</label>
-              <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+              <label className="text-sm font-medium mb-2 block">Thể loại</label>
+              <Select value={selectedGenre} onValueChange={setSelectedGenre} disabled={isLoadingGenres}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select genre" />
+                  <SelectValue placeholder={isLoadingGenres ? "Loading genres..." : "Thể loại"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {GENRES.map(genre => (
-                    <SelectItem key={genre} value={genre}>{genre}</SelectItem>
+                  {genres.map(genre => (
+                    <SelectItem key={genre.slug} value={genre.slug}>{genre.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Year</label>
+              <label className="text-sm font-medium mb-2 block">Năm</label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
+                  <SelectValue placeholder="Năm" />
                 </SelectTrigger>
                 <SelectContent>
                   {YEARS.map(year => (
@@ -151,20 +240,20 @@ export default function Films() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Country</label>
+              <label className="text-sm font-medium mb-2 block">Quốc gia</label>
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select country" />
+                  <SelectValue placeholder="Quốc gia" />
                 </SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  {countries.map(country => (
+                    <SelectItem key={country.slug} value={country.slug}>{country.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div>
+            {/* <div>
               <label className="text-sm font-medium mb-2 block">Đánh giá</label>
               <Slider
                 value={ratingRange}
@@ -178,7 +267,7 @@ export default function Films() {
                 <span>{ratingRange[0].toFixed(1)}</span>
                 <span>{ratingRange[1].toFixed(1)}</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <Button className="mt-6" onClick={applyFilters}>
@@ -188,6 +277,7 @@ export default function Films() {
         </div>
 
         {/* Movies Grid */}
+       {movies.length > 0 ?  <>
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {[...Array(10)].map((_, i) => (
@@ -202,7 +292,11 @@ export default function Films() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {movies.map((movie: Movie, idx) => (
+            {movies.map((movie: Movie, idx) => {
+              
+              const thumbnail = movie.thumb_url?.includes("http") ? movie.thumb_url : `https://phimimg.com/${movie.thumb_url}`;
+
+              return(
               <LinkRouter
                 key={idx}
                 href={`/chi-tiet/${movie.slug}`}
@@ -210,7 +304,7 @@ export default function Films() {
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden">
                   <Image
-                    src={movie.thumb_url}
+                    src={thumbnail}
                     alt={movie.name}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     width={300}
@@ -231,10 +325,10 @@ export default function Films() {
                   </div>
                 </div>
               </LinkRouter>
-            ))}
+            )})}
           </div>
         )}
-
+        </> : <div className='w-full p-6 bg-black'>Không tìm thấy kết quả</div>}
         {/* Pagination */}
         {!isLoading && totalPages > 1 && (
           <div className="mt-12 mb-8 flex justify-center items-center gap-2">
