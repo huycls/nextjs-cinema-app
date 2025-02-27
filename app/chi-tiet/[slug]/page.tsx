@@ -1,6 +1,7 @@
-import Link from 'next/link';
+
 import { FilmContent } from './film-content';
 import { getMovie, getMovies } from '@/lib/api';
+import { LinkRouter } from '@/components/ui/linkRouter';
 
 // This function is required for static site generation with dynamic routes
 export async function generateStaticParams() {
@@ -9,9 +10,9 @@ export async function generateStaticParams() {
     const data = await getMovies(1);
     // Filter out any invalid slugs
     return data.items
-      .filter(movie => movie && movie.movie.slug && typeof movie.movie.slug === 'string')
+      .filter(movie => movie && movie.slug && typeof movie.slug === 'string')
       .map(movie => ({
-        slug: movie.movie.slug,
+        slug: movie.slug,
       }));
   } catch (error) {
     console.error('Failed to generate static params:', error);
@@ -23,12 +24,12 @@ export async function generateStaticParams() {
 export default async function FilmPage({ params }: { params: { slug: string } }) {
   if (!params?.slug) {
     return (
-      <main className="min-h-screen bg-background pt-20">
+      <main className="min-h-screen bg-transparent py-20">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold">Invalid movie URL</h1>
-          <Link href="/" className="text-primary hover:underline">
-            Return to home
-          </Link>
+          <LinkRouter href="/" className="text-primary hover:underline">
+            Quay lại trang chủ
+          </LinkRouter>
         </div>
       </main>
     );
@@ -40,21 +41,20 @@ export default async function FilmPage({ params }: { params: { slug: string } })
     const movie = await getMovie(params.slug);
     
     if (!movie) {
-      throw new Error('Movie not found');
+      throw new Error('Không tìm thấy');
     }
-  
 
     return <>
-     {<FilmContent movie={movie} /> }
+     {<FilmContent movie={{...movie, slug: params.slug}} /> }
     </>;
   } catch (error) {
     return (
-      <main className="min-h-screen bg-background pt-20">
+      <main className="min-h-screen bg-transparent py-20">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold">Movie not found</h1>
-          <Link href="/" className="text-primary hover:underline">
-            Return to home
-          </Link>
+          <h1 className="text-4xl font-bold">Không tìm thấy</h1>
+          <LinkRouter href="/" className="text-primary hover:underline">
+          Quay lại trang chủ
+          </LinkRouter>
         </div>
       </main>
     );

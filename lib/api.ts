@@ -1,5 +1,13 @@
+export interface Episodes{
+  server_name: string;
+  server_data: {
+      name: string;
+      link_embed: string;
+  }[];
+}
+
 export interface Movie {
-  movie: {
+    movie: any;
     _id: string;
     name: string;
     origin_name: string;
@@ -17,13 +25,13 @@ export interface Movie {
     lang: string;
     slug: string;
     description: string;
-  },
-  episodes: [
-    {server_name: string, server_data: Array<string>}
-  ]
+    episodes: Episodes[];
+
 }
 export interface ApiResponse {
   items: Movie[];
+  data: any;
+  slug: string;
   pagination: {
     totalItems: number;
     totalItemsPerPage: number;
@@ -33,13 +41,20 @@ export interface ApiResponse {
 }
 
 export async function getMovies(page = 1): Promise<ApiResponse> {
-  const response = await fetch(`https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${page}`);
+  const response = await fetch(`https://phimapi.com/danh-sach/phim-moi-cap-nhat-v2?page=${page}`);
   if (!response.ok) {
     throw new Error('Failed to fetch movies');
   }
   return response.json();
 }
 
+export async function getMoviesByParams({type_list, params, page = 1}: {type_list: string, params: string, page?: number}): Promise<ApiResponse> {
+  const response = await fetch(`https://phimapi.com/v1/api/danh-sach/${type_list}?page=${page}${params}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch movies');
+  }
+  return response.json();
+}
 export async function getMovie(slug: string): Promise<Movie> {
   const response = await fetch(`https://phimapi.com/phim/${slug}`);
   if (!response.ok) {

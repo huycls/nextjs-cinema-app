@@ -2,14 +2,17 @@ import { Play, Info, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getMovies, type Movie } from '@/lib/api';
+import Image from 'next/image';
 
 async function getInitialData() {
   try {
     const data = await getMovies(1);
+    const movies = data.items;
+
     return {
-      featured: data.items[0],
-      trending: data.items.slice(1, 5),
-      newReleases: data.items.slice(5, 9)
+      featured: movies[0],
+      trending: movies?.slice(1, 5),
+      newReleases: movies?.slice(5, 9)
     };
   } catch (error) {
     console.error('Failed to fetch movies:', error);
@@ -26,13 +29,11 @@ export default async function Home() {
 
   if (!featured) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-lg">Failed to load movies</p>
+      <main className="min-h-screen bg-transparent flex items-center justify-center">
+        <p className="text-lg">Không tìm thấy dữ liệu</p>
       </main>
     );
   }
-
-  console.log("featured",featured)
 
   return (
     <main className="min-h-screen bg-transparent text-foreground">
@@ -40,7 +41,7 @@ export default async function Home() {
       <div className="relative h-[80vh] w-full">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${featured.poster_url || featured.thumb_url})` }}
+          style={{ backgroundImage: `url(${featured?.poster_url || featured?.thumb_url})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
         </div>
@@ -48,17 +49,17 @@ export default async function Home() {
         <div className="relative h-full flex items-center">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl">
-              <h1 className="text-5xl font-bold mb-4">{featured.name}</h1>
+              <h1 className="text-5xl font-bold mb-4">{featured?.name}</h1>
               <p className="text-lg mb-8"></p>
               <div className="flex gap-4">
-                <Link href={`/${featured.slug}`}>
+                <Link href={`/xem-phim/${featured?.slug}`}>
                   <Button size="lg">
-                    <Play className="mr-2 h-5 w-5" /> Watch Now
+                    <Play className="mr-2 h-5 w-5" /> Xem ngay
                   </Button>
                 </Link>
-                <Link href={`/${featured.slug}`}>
+                <Link href={`/chi-tiet/${featured?.slug}`}>
                   <Button variant="secondary" size="lg">
-                    <Info className="mr-2 h-5 w-5" /> More Info
+                    <Info className="mr-2 h-5 w-5" /> Chi tiết
                   </Button>
                 </Link>
               </div>
@@ -76,22 +77,24 @@ export default async function Home() {
           <div key={section.title} className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold">{section.title}</h2>
-              <Link href="/all-films" className="group flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Show All
+              <Link href="/danh-sach" className="group flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Xem tất cả
                 <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {section.movies.map((movie: Movie) => (
+              {section.movies?.map((movie: Movie, idx) => (
                 <Link
-                  key={movie._id}
-                  href={`/${movie.slug}`}
+                  key={idx}
+                  href={`/chi-tiet/${movie?.slug}`}
                   className="relative aspect-video rounded-md overflow-hidden transition-transform duration-300 ease-in-out group hover:scale-105"
                 >
-                  <img
-                    src={movie.thumb_url}
-                    alt={movie.name}
+                  <Image
+                    src={movie?.thumb_url}
+                    alt={movie?.name}
                     className="w-full h-full object-cover"
+                    width={309}
+                    height={174}
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Button variant="secondary" size="icon">

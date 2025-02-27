@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Play, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { getMovies, type Movie, type ApiResponse } from '@/lib/api';
+import { type Movie, type ApiResponse, getMoviesByParams } from '@/lib/api';
+import Image from 'next/image';
+import { LinkRouter } from '@/components/ui/linkRouter';
 
 const GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Science Fiction', 'Thriller'];
 const YEARS = Array.from({ length: 25 }, (_, i) => 2024 - i);
 const COUNTRIES = ['United States', 'United Kingdom', 'France', 'Japan', 'South Korea', 'India', 'Canada', 'Germany', 'Italy', 'Spain'];
 
-export default function Films() {
+export default function Films({data}: {data: ApiResponse}) {
   const [selectedGenre, setSelectedGenre] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
@@ -20,17 +21,29 @@ export default function Films() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+  const currentSlug = data.slug;
+  
+
+  useEffect(() => {
+    setMovies(data.data?.items);
+    setTotalPages(data.data?.params?.pagination?.totalPages);
+    setCurrentPage(data.data?.params?.pagination?.currentPage);
+  }, [data]);
 
   const fetchMovies = async (page: number) => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getMovies(page);
-      setMovies(data.items);
-      setTotalPages(data.pagination.totalPages);
-      setCurrentPage(data.pagination.currentPage);
+      const data = await getMoviesByParams({type_list: currentSlug, page: page, params: ""});
+       setMovies(data.data?.items);
+      setTotalPages(data.data?.params?.pagination.totalPages);
+      setCurrentPage(data.data?.params?.pagination.currentPage);
+
+      
     } catch (err) {
       setError('Failed to load movies');
       console.error('Error fetching movies:', err);
@@ -39,13 +52,14 @@ export default function Films() {
     }
   };
 
-  useEffect(() => {
-    fetchMovies(currentPage);
-  }, [currentPage]);
+//   useEffect(() => {
+//     fetchMovies(currentPage);
+//   }, [currentPage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      fetchMovies(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -95,13 +109,13 @@ export default function Films() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-background pt-20">
+      <main className="min-h-screen bg-transparent pt-20">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-lg text-red-500">{error}</p>
-            <Button onClick={() => fetchMovies(currentPage)} className="mt-4">
-              Try Again
-            </Button>
+            {/* <Button onClick={() => fetchMovies(currentPage)} className="mt-4">
+              Thử lại
+            </Button> */}
           </div>
         </div>
       </main>
@@ -109,12 +123,12 @@ export default function Films() {
   }
 
   return (
-    <main className="min-h-screen bg-background pt-20">
+    <main className="min-h-screen bg-transparent pt-20">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold">All Films</h1>
           <Button variant="outline" onClick={clearFilters}>
-            Clear Filters
+            Xóa bộ lọc
           </Button>
         </div>
 
@@ -164,7 +178,7 @@ export default function Films() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Rating Range</label>
+              <label className="text-sm font-medium mb-2 block">Đánh giá</label>
               <Slider
                 value={ratingRange}
                 onValueChange={setRatingRange}
@@ -182,7 +196,7 @@ export default function Films() {
 
           <Button className="mt-6" onClick={applyFilters}>
             <Filter className="mr-2 h-4 w-4" />
-            Apply Filters
+            Lọc
           </Button>
         </div>
 
@@ -201,17 +215,19 @@ export default function Films() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {movies.map(movie => (
-              <Link
-                key={movie._id}
-                href={`/${movie.slug}`}
+            {movies.map((movie: Movie, idx:any) => (
+              <LinkRouter
+                key={idx}
+                href={`/chi-tiet/${movie.slug}`}
                 className="group relative"
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden">
-                  <img
-                    src={movie.thumb_url}
+                  <Image
+                    src={`https://phimimg.com/${movie.thumb_url}`}
                     alt={movie.name}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    width={300}
+                    height={450}
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Button variant="secondary" size="icon" className="mr-2">
@@ -227,7 +243,7 @@ export default function Films() {
                     <span>{movie.quality}</span>
                   </div>
                 </div>
-              </Link>
+              </LinkRouter>
             ))}
           </div>
         )}
