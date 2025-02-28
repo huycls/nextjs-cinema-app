@@ -168,7 +168,7 @@ export default function SearchPage() {
           <div className="text-center my-12">
             <h2 className="text-2xl font-semibold mb-2">Không tìm thấy kết quả</h2>
             <p className="text-muted-foreground mb-6">
-            Không thể tìm thấy kết quả nào với từ khóa "{currentQuery}"
+              Không thể tìm thấy kết quả nào với từ khóa &quot;{currentQuery}&quot;
             </p>
             <Button onClick={clearSearch} variant="outline">
              Xóa
@@ -201,7 +201,7 @@ export default function SearchPage() {
                 {movies.map(movie => (
                   <LinkRouter
                     key={movie._id}
-                    href={`/${movie.slug}`}
+                    href={`/chi-tiet/${movie.slug}`}
                     className="group relative"
                   >
                     <div className="aspect-[2/3] rounded-lg overflow-hidden">
