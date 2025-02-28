@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Slider } from '@/components/ui/slider';
 import { Play, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { type Movie, type ApiResponse, getMoviesByParams } from '@/lib/api';
 import Image from 'next/image';
 import { LinkRouter } from '@/components/ui/linkRouter';
 
-const GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Science Fiction', 'Thriller'];
-const YEARS = Array.from({ length: 25 }, (_, i) => 2024 - i);
-const COUNTRIES = ['United States', 'United Kingdom', 'France', 'Japan', 'South Korea', 'India', 'Canada', 'Germany', 'Italy', 'Spain'];
+// const GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Science Fiction', 'Thriller'];
+// const YEARS = Array.from({ length: 25 }, (_, i) => 2024 - i);
+// const COUNTRIES = ['United States', 'United Kingdom', 'France', 'Japan', 'South Korea', 'India', 'Canada', 'Germany', 'Italy', 'Spain'];
 
 export default function Films({data}: {data: ApiResponse}) {
-  const [selectedGenre, setSelectedGenre] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedCountry, setSelectedCountry] = useState<string>('');
-  const [ratingRange, setRatingRange] = useState<number[]>([0, 10]);
+  // const [selectedGenre, setSelectedGenre] = useState<string>('');
+  // const [selectedYear, setSelectedYear] = useState<string>('');
+  // const [selectedCountry, setSelectedCountry] = useState<string>('');
+  // const [ratingRange, setRatingRange] = useState<number[]>([0, 10]);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,7 +26,40 @@ export default function Films({data}: {data: ApiResponse}) {
 
 
   const currentSlug = data.slug;
+
+  const dataListtype = [
+    {
+      name: 'Phim lẻ',
+      slug: 'phim-le'
+    },
+    {
+      name: 'Phim bộ',
+      slug: 'phim-bo'
+    },
+    {
+      name: 'TV Shows',
+      slug: 'tv-shows'
+    },
+    {
+      name: 'Phim lồng tiếng',
+      slug: 'phim-long-tieng'
+    },
+    {
+      name: 'Hoạt hình',
+      slug: 'hoat-hinh'
+    },
+    {
+      name: 'Phim Vietsub',
+      slug: 'phim-vietsub'
+    },
+    {
+      name: 'Phim Thuyết Minh',
+      slug: 'phim-thuyet-minh'
+    }
+  ];
   
+
+  const typeToRender = dataListtype.find(item => item.slug === currentSlug);
 
   useEffect(() => {
     setMovies(data.data?.items);
@@ -64,20 +97,20 @@ export default function Films({data}: {data: ApiResponse}) {
     }
   };
 
-  const applyFilters = () => {
-    // Reset to first page when applying filters
-    setCurrentPage(1);
-    fetchMovies(1);
-  };
+  // const applyFilters = () => {
+  //    Reset to first page when applying filters
+  //   setCurrentPage(1);
+  //   fetchMovies(1);
+  // };
 
-  const clearFilters = () => {
-    setSelectedGenre('');
-    setSelectedYear('');
-    setSelectedCountry('');
-    setRatingRange([0, 10]);
-    setCurrentPage(1);
-    fetchMovies(1);
-  };
+  // const clearFilters = () => {
+  //    setSelectedGenre('');
+  //    setSelectedYear('');
+  //    setSelectedCountry('');
+  //    setRatingRange([0, 10]);
+  //   setCurrentPage(1);
+  //   fetchMovies(1);
+  // };
 
   // Generate pagination numbers
   const getPaginationNumbers = () => {
@@ -126,14 +159,11 @@ export default function Films({data}: {data: ApiResponse}) {
     <main className="min-h-screen bg-transparent pt-20">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold">All Films</h1>
-          <Button variant="outline" onClick={clearFilters}>
-            Xóa bộ lọc
-          </Button>
+          <h1 className="text-4xl font-bold">Danh sách {typeToRender?.name}</h1>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-card rounded-lg p-6 mb-8">
+        {/* <div className="bg-card rounded-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label className="text-sm font-medium mb-2 block">Genre</label>
@@ -198,7 +228,7 @@ export default function Films({data}: {data: ApiResponse}) {
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-        </div>
+        </div> */}
 
         {/* Movies Grid */}
         {isLoading ? (
@@ -248,7 +278,6 @@ export default function Films({data}: {data: ApiResponse}) {
           </div>
         )}
 
-        {/* Pagination */}
         {!isLoading && totalPages > 1 && (
           <div className="mt-12 mb-8 flex justify-center items-center gap-2">
             <Button
