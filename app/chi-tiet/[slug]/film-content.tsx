@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react';
 import type { Movie } from '@/lib/api';
 import FilmDetails from './film-details';
 import { LinkRouter } from '@/components/ui/linkRouter';
-
 export function FilmContent({ movie }: { movie: Movie }) {
 
 
