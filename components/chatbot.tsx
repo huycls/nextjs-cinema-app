@@ -17,7 +17,7 @@ interface Message {
 
 const WELCOME_MESSAGE = {
   text: "👋 Hi! I'm your movie expert assistant. I can help you:\n\n" +
-        "🔍 Search for movies using 'Đưa tôi đến bộ phim {tên phim}'\n" +
+        "🔍 Search for movies using 'Take me to {tên phim}'\n" +
         "🎬 Answer questions about movies\n" +
         "🌟 Provide movie recommendations\n" +
         "📚 Share movie facts and trivia\n\n" +
@@ -95,7 +95,7 @@ export function ChatBot() {
     setIsLoading(true);
 
     try {
-      const response = await chatWithGemini(messageToSend);
+      const response = await chatWithGemini(messageToSend, router);
       
       // Try to parse the response as JSON if it's a search command
       try {
@@ -110,7 +110,7 @@ export function ChatBot() {
           setMessages(prev => [...prev, confirmMessage]);
           
           // Navigate to search page with the keyword
-          router.push(`/search?q=${encodeURIComponent(jsonResponse.keyword)}`);
+          router.push(`/tim-kiem?keyword=${encodeURIComponent(jsonResponse.keyword)}`, undefined);
           setIsOpen(false); // Close the chat window
           return;
         }
@@ -137,7 +137,6 @@ export function ChatBot() {
       setIsLoading(false);
     }
   };
-
   const handleRetry = () => {
     if (retryMessage) {
       handleSubmit(new Event('submit') as any);

@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { useRouter } from 'next/router'; // Assuming you're using Next.js
 
 // Initialize the API with error handling
 const API_KEY = 'AIzaSyCXoHJWFriF0NusmCpIk7YP8Wqy2RLvkek';
@@ -81,7 +82,7 @@ export async function cloneChatSession() {
   }
 }
 
-export async function chatWithGemini(message: string) {
+export async function chatWithGemini(message: string, router: any) {
   try {
     if (!chatSession) {
       await initChatSession();
@@ -89,6 +90,15 @@ export async function chatWithGemini(message: string) {
 
     if (!message.trim()) {
       throw new Error('Please enter a message');
+    }
+
+    // Check if the message contains the keyword
+    const keywordRegex = /^Take me to (.*)$/i;
+    const match = message.match(keywordRegex);
+    if (match) {
+      const searchQuery = match[1].trim();
+      router.push(`/tim-kiem?keyword=${encodeURIComponent(searchQuery)}`);
+      return `Redirecting to search results for "${searchQuery}"...`;
     }
 
     const result = await chatSession.sendMessage(message);
