@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { LoadingProvider } from "@/components/loading-provider";
+import { ChatBot } from '@/components/chatbot';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <ChatBot />
           </LoadingProvider>
         </ThemeProvider>
       </body>

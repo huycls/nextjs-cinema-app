@@ -63,8 +63,11 @@ export default function SearchPage() {
     if (currentQuery) {
       // Update URL with search query without triggering navigation
       const params = new URLSearchParams(searchParams.toString());
+      const newQuery = params.get('keyword') || '';
       params.set('keyword', currentQuery);
-      router.replace(`/tim-kiem?${params.toString()}`, { scroll: false });
+      setSearchQuery(newQuery);
+      setCurrentQuery(newQuery);
+      // router.replace(`/tim-kiem?${params.toString()}`, { scroll: false });
     }
   }, [ searchParams]);
 
