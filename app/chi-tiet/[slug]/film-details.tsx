@@ -112,7 +112,7 @@ export default function FilmDetails({ movie }: {
       <Button size="lg" className="w-full max-w-[200px] sm:w-auto" onClick={() => {router.push(`/xem-phim/${currentSlug}`)}} >
         <Play className="mr-2 h-5 w-5" /> Xem ngay
       </Button>
-      {currentEpisode && <div className='flex items-center'>Current Episode: <span className='font-bold ml-2'>{currentEpisode + 1}</span>  
+      {currentEpisode && <div className='flex items-center'>Đang xem: <span className='font-bold ml-2'>{currentEpisode + 1}</span>  
         </div>}
     </div>
        

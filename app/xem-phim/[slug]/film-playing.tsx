@@ -8,8 +8,9 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
 
     const data = episodes[0]?.episodes;
     const currentFilm = episodes[0]?.movie
-    const currentData = episodes[0].episodes[currentServer];
+    const currentData = episodes[0]?.episodes[currentServer];
     const currentEpisodeData = currentData?.server_data[currentEpisode];
+    const maxEpisode = currentEpisode === currentData?.server_data?.length - 1;
 
     useEffect(( ) =>{
      const  currentHistory = JSON.parse(window.localStorage.getItem('filmHistory') || '[]');
@@ -64,7 +65,10 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
             allow="autoplay; encrypted-media"
           /> 
         </div>
-
+        <div className="flex justify-center gap-4 mt-4">
+         <Button variant="outline" size="sm" onClick={() => setCurrentEpisode(currentEpisode - 1)} disabled={currentEpisode === 0}>Tập trước</Button>
+         <Button variant="outline" size="sm" onClick={() => setCurrentEpisode(currentEpisode + 1)} disabled={maxEpisode}>Tập tiếp theo</Button>
+        </div>
         {currentData && (
           <div className="mt-10">
             <h3 className="text-2xl font-bold mb-4">Tập phim:</h3>
