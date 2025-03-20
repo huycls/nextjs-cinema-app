@@ -1,16 +1,58 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Movie } from '@/lib/api';
 
 export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
     const [currentServer, setCurrentServer] = useState(0);
     const [currentEpisode, setCurrentEpisode] = useState(0);
 
-    const data = episodes[0].episodes;
-
+    const data = episodes[0]?.episodes;
+    const currentFilm = episodes[0]?.movie
     const currentData = episodes[0].episodes[currentServer];
-
     const currentEpisodeData = currentData?.server_data[currentEpisode];
+
+    useEffect(( ) =>{
+     const  currentHistory = JSON.parse(window.localStorage.getItem('filmHistory') || '[]');
+      if(currentHistory.length > 0){
+        const currentHistoryData = currentHistory.find((item: any) => item.id === currentFilm._id);
+        if(currentHistoryData){
+          setCurrentServer(currentHistoryData.server);
+          setCurrentEpisode(currentHistoryData.episode);
+        }
+      }
+    
+    },[currentFilm])
+
+    const handleEpisodeChange = (episodeIndex: number) => {
+      setCurrentEpisode(episodeIndex);
+      if (currentFilm) {
+        const newHistoryData = {
+          id: currentFilm._id,
+          name: currentFilm.name,
+          episode: episodeIndex,
+          server: currentServer,
+          time: new Date().toISOString(),
+        };
+        const currentHistory = JSON.parse(window.localStorage.getItem('filmHistory') || '[]');
+        if (currentHistory.find((item: any) => item.id === currentFilm._id)) {
+          const updatedHistoryData = currentHistory.map((item: any) => {
+            if (item.id === currentFilm._id) {
+              return {
+                ...item,
+                episode: episodeIndex,
+                time: new Date().toISOString(),
+              };
+            }
+            return item;
+          });
+          window.localStorage.setItem('filmHistory', JSON.stringify(updatedHistoryData));
+        } else {
+        const updatedHistoryData = [...currentHistory, newHistoryData];
+        window.localStorage.setItem('filmHistory', JSON.stringify(updatedHistoryData));
+      }
+    }
+    };
+    
 
     return (
       <div>
@@ -36,7 +78,7 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {currentData.server_data.map((episode: { name: string }, index: number) => (
-                <Button key={index} variant="outline" size="sm" onClick={() => setCurrentEpisode(index)}>
+                <Button key={index} variant="outline" size="sm" onClick={() => handleEpisodeChange(index)}>
                   <span className={currentEpisode === index ? "text-red-500" : ""}>{episode.name}</span>
                 </Button>
               ))}

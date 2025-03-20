@@ -1,4 +1,5 @@
 export interface Episodes{
+  _id: any;
   server_name: string;
   server_data: {
       name: string;

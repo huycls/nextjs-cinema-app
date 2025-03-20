@@ -3,15 +3,33 @@ import { Play, ArrowLeft, Calendar, Clock, Globe, Star } from 'lucide-react';
 import Image from 'next/image';
 import type { Movie } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function FilmDetails({ movie }: { 
   movie: Movie,
 }) {
+  const [currentEpisode, setCurrentEpisode] = useState();
 
   const router = useRouter();
 
   const currentSlug =  movie.slug;
   const details = movie.movie;
+
+  useEffect(() => {
+    const currentFilmHistory = JSON.parse(localStorage.getItem('filmHistory') || "[]") ;
+    const filmInHistory = currentFilmHistory.find((film: any) => film.id === details._id) || null;
+
+    console.log(currentFilmHistory);
+    
+    if (filmInHistory) {
+      setCurrentEpisode(filmInHistory.episode);
+    } else {
+      setCurrentEpisode(0);
+    }
+    
+  }, [details]);
+
+  
   
   return <div>
 
@@ -94,17 +112,14 @@ export default function FilmDetails({ movie }: {
       </p>
     )}
   
-    <div className="flex flex-wrap gap-4">
-      <Button size="lg" className="w-full sm:w-auto" onClick={() => {router.push(`/xem-phim/${currentSlug}`)}} >
+    <div className="grid sm:grid-cols-2 gap-6">
+      <Button size="lg" className="w-full max-w-[200px] sm:w-auto" onClick={() => {router.push(`/xem-phim/${currentSlug}`)}} >
         <Play className="mr-2 h-5 w-5" /> Xem ngay
       </Button>
-       {/* {details.episode_current && (
-        <Button variant="outline" size="lg">
-         {details.episode_current}
-        </Button>
-      )} */}
+      <div className='flex items-center'>Current Episode: <span className='font-bold ml-2'>{currentEpisode + 1}</span>  
+        </div>
     </div>
-  
+       
     {/* Additional Info */}
     <div className="grid sm:grid-cols-2 gap-6 mt-12">
       <div className="space-y-4">
@@ -130,7 +145,7 @@ export default function FilmDetails({ movie }: {
         )}
         {details.episode_current && (
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Current Episode</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
             <p className="mt-1">{details.episode_current}</p>
           </div>
         )}
