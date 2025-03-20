@@ -24,6 +24,14 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
     
     },[currentFilm])
 
+    useEffect(()=>{
+      const artControll = document.querySelector('.art-control-setting') as HTMLElement;
+
+      if(artControll){
+        artControll.style.display = 'none';
+      }
+    },[])
+
     const handleEpisodeChange = (episodeIndex: number) => {
       setCurrentEpisode(episodeIndex);
       if (currentFilm) {
@@ -57,12 +65,13 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
 
     return (
       <div>
-        <div className="aspect-video w-full">
+        <div className="-ml-[8%] w-[117%] h-[110%] scale-x-90 md:scale-100 md:w-full md:h-full aspect-video md:ml-0">
           <iframe 
+            title="Video Player"
             src={currentEpisodeData?.link_embed}
             className="w-full h-full"
             allowFullScreen
-            allow="autoplay; encrypted-media"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           /> 
         </div>
         <div className="flex justify-center gap-4 mt-4">
