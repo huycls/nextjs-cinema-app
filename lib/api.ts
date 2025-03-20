@@ -82,7 +82,7 @@ export async function getMovies(page = 1, filters?: {
   minRating?: number;
   maxRating?: number;
 }): Promise<ApiResponse> {
-  let url = `https://phimapi.com/danh-sach/phim-moi-cap-nhat-v2?page=${page}`;
+  let url = `https://phimapi.com/danh-sach/phim-moi-cap-nhat-v1?page=${page}`;
   
   // If filters are provided, determine which specific API to use
   if (filters) {
