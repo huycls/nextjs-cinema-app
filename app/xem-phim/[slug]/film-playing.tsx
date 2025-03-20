@@ -12,6 +12,16 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
     const currentEpisodeData = currentData?.server_data[currentEpisode];
     const maxEpisode = currentEpisode === currentData?.server_data?.length - 1;
 
+    useEffect(() =>{
+      if(typeof window !== "undefined"){
+        //scroll to top behavior smooth
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    },[currentEpisode])
+
     useEffect(( ) =>{
      const  currentHistory = JSON.parse(window.localStorage.getItem('filmHistory') || '[]');
       if(currentHistory.length > 0){
@@ -23,14 +33,6 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
       }
     
     },[currentFilm])
-
-    useEffect(()=>{
-      const artControll = document.querySelector('.art-control-setting') as HTMLElement;
-
-      if(artControll){
-        artControll.style.display = 'none';
-      }
-    },[])
 
     const handleEpisodeChange = (episodeIndex: number) => {
       setCurrentEpisode(episodeIndex);
@@ -64,7 +66,7 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
     
 
     return (
-      <div>
+      <div className="auto">
         <div className="-ml-[8%] w-[117%] h-[110%] scale-x-90 md:scale-100 md:w-full md:h-full aspect-video md:ml-0">
           <iframe 
             title="Video Player"
@@ -78,17 +80,17 @@ export default function FilmPlaying({ episodes }: { episodes: Movie[] }) {
          <Button variant="outline" size="sm" onClick={() => setCurrentEpisode(currentEpisode - 1)} disabled={currentEpisode === 0}>Tập trước</Button>
          <Button variant="outline" size="sm" onClick={() => setCurrentEpisode(currentEpisode + 1)} disabled={maxEpisode}>Tập tiếp theo</Button>
         </div>
-        {currentData && (
-          <div className="mt-10">
-            <h3 className="text-2xl font-bold mb-4">Tập phim:</h3>
-            <div className='mb-4 flex gap-4 items-center'>
+        <div className='mb-4 gap-4 flex items-start flex-col'>
               Server:
-              {data.map((server: { server_name: string }, index: number) => (
+              <div className="flex flex-wrap gap-4">{data.map((server: { server_name: string }, index: number) => (
                 <Button key={index} variant="outline" size="sm" onClick={() => setCurrentServer(index)}>
                   <span className={currentServer === index ? "text-red-500" : ""}>{server.server_name}</span>
                 </Button>
-              ))}
+              ))}</div>
             </div>
+        {currentData && (
+          <div className="mt-10">
+            <h3 className="text-2xl font-bold mb-4">Tập phim:</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {currentData.server_data.map((episode: { name: string }, index: number) => (
                 <Button key={index} variant="outline" size="sm" onClick={() => handleEpisodeChange(index)}>
